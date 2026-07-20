@@ -162,6 +162,14 @@
                 flex: 1;
             }
         }
+
+        /* PC 화면(960px 이상)에서는 본문 폭을 960px로 제한하고 가운데 정렬 */
+        @media (min-width: 960px) {
+            body {
+                max-width: 960px;
+                margin: 0 auto;
+            }
+        }
     </style>
 </head>
 
