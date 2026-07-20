@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>주말 독서 토론 참가 신청</title>
+    <style>
+        /* 기본값 초기화: 브라우저마다 다른 여백/박스 계산 방식을 통일 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+            color: #3a2e26;
+            background-color: #fdf8f3;
+            line-height: 1.6;
+            padding: 0 16px 48px;
+            word-break: keep-all;
+            /* 한글 단어가 음절 단위로 어색하게 끊기지 않도록 함 */
+        }
+
+        h1,
+        h2 {
+            color: #3a2e26;
+        }
+
+        /* 히어로 영역 */
+        .hero {
+            text-align: center;
+            padding: 48px 0 32px;
+        }
+
+        .hero h1 {
+            font-size: 1.6rem;
+            margin-bottom: 12px;
+        }
+
+        .hero p {
+            font-size: 1rem;
+            color: #6b5b4f;
+        }
+
+        /* 소개 카드: 모바일에서는 세로로 쌓고, 넓은 화면에서만 가로 3열 */
+        .intro-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+
+        .intro-card {
+            background-color: #ffffff;
+            border: 1px solid #ecdfd2;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .intro-card h2 {
+            font-size: 1.1rem;
+            color: #b5762a;
+            margin-bottom: 8px;
+        }
+
+        /* 예약 문의 폼 */
+        .reservation {
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .reservation h2 {
+            font-size: 1.3rem;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .form-field {
+            margin-bottom: 20px;
+        }
+
+        .form-field label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        /* 모바일에서 손가락으로 누르고 입력하기 편하도록 입력칸을 크게, 폭은 화면 전체로 */
+        .form-field input,
+        .form-field textarea {
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            /* 16px 미만이면 iOS 사파리에서 입력 시 화면이 확대됨 */
+            border: 1px solid #d8c7b6;
+            border-radius: 8px;
+            background-color: #ffffff;
+        }
+
+        .form-field textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-field input:focus,
+        .form-field textarea:focus {
+            outline: none;
+            border-color: #b5762a;
+        }
+
+        /* 버튼도 화면 전체 너비 + 충분한 높이로, 엄지로 누르기 쉽게 */
+        button[type="submit"] {
+            width: 100%;
+            min-height: 52px;
+            font-size: 1.05rem;
+            font-weight: bold;
+            color: #ffffff;
+            background-color: #b5762a;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        button[type="submit"]:active {
+            background-color: #9c6321;
+        }
+
+        /* 접수 결과 안내 문구: 내용이 있을 때만 보이도록 함 */
+        .form-message {
+            display: none;
+            margin-bottom: 16px;
+            padding: 12px 14px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+
+        .form-message:not(:empty) {
+            display: block;
+        }
+
+        .form-message--error {
+            color: #9b2c2c;
+            background-color: #fbe7e7;
+            border: 1px solid #f0b8b8;
+        }
+
+        .form-message--success {
+            color: #2f6b3a;
+            background-color: #e6f2e8;
+            border: 1px solid #b7dcc0;
+        }
+
+        /* 태블릿 이상 화면에서는 소개 카드를 가로 3열로 */
+        @media (min-width: 720px) {
+            .intro-cards {
+                flex-direction: row;
+            }
+
+            .intro-card {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 히어로 영역 -->
+    <header class="hero">
+        <h1>혼자 읽던 책, 이제 함께 이야기해요 — 주말 독서 토론</h1>
+        <p>주말마다 한 권의 책을 두고 이야기 나누는 독서 토론 모임입니다.</p>
+    </header>
+
+    <!-- 소개 카드 3개: 무엇을 / 얼마에 / 어디서 -->
+    <section class="intro-cards">
+        <article class="intro-card">
+            <h2>무엇을</h2>
+            <p>이번 주 함께 읽고 이야기 나눌 책과 진행 방식을 소개합니다.</p>
+        </article>
+
+        <article class="intro-card">
+            <h2>얼마에</h2>
+            <p>1회 참가 비용: 커피 + 쿠키 포함 10,000원</p>
+        </article>
+
+        <article class="intro-card">
+            <h2>어디서</h2>
+            <p>수유역 커피빈</p>
+        </article>
+    </section>
+
+    <!-- 예약 문의 폼 -->
+    <section class="reservation">
+        <h2>예약 문의하기</h2>
+        <form id="reservation-form">
+            <div class="form-field">
+                <label for="name">이름</label>
+                <input type="text" id="name" name="name">
+            </div>
+
+            <div class="form-field">
+                <label for="contact">연락처</label>
+                <input type="text" id="contact" name="contact">
+            </div>
+
+            <div class="form-field">
+                <label for="hope-date">희망 날짜</label>
+                <input type="date" id="hope-date" name="hope-date">
+            </div>
+
+            <div class="form-field">
+                <label for="request">요청사항</label>
+                <textarea id="request" name="request"></textarea>
+            </div>
+
+            <p id="form-message" class="form-message" role="alert"></p>
+
+            <button type="submit">예약 문의하기</button>
+        </form>
+    </section>
+
+    <!-- Supabase JS 라이브러리 (CDN 방식으로 불러옴) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+    <script>
+        // ↓↓↓ Supabase 프로젝트 연결 정보 (URL, anon/publishable key는 여기에 넣는다) ↓↓↓
+        // 주의: 여기 들어가는 키는 "공개용(publishable) 키"로, 손님용 화면에 노출되어도 안전함
+        // (INSERT만 허용하고 SELECT/UPDATE/DELETE는 DB 정책(RLS)이 막아줌)
+        const SUPABASE_URL = 'https://wtyralabvgrxxedhqrfj.supabase.co'; // 내 Supabase 프로젝트 URL
+        const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_zHbnogYy1cf7Nksso92mgA_phtXZd3p'; // 내 anon(publishable) key
+        // ↑↑↑ 여기까지 ↑↑↑
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+        const reservationForm = document.getElementById('reservation-form');
+        const formMessage = document.getElementById('form-message');
+        const submitButton = reservationForm.querySelector('button[type="submit"]');
+
+        reservationForm.addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            // 필수 입력 항목만 검사 (요청사항은 선택 입력)
+            const requiredFields = [
+                { input: document.getElementById('name'), message: '이름을 입력해주세요.' },
+                { input: document.getElementById('contact'), message: '연락처를 입력해주세요.' },
+                { input: document.getElementById('hope-date'), message: '희망 날짜를 입력해주세요.' },
+            ];
+
+            const emptyField = requiredFields.find(function (field) {
+                return field.input.value.trim() === '';
+            });
+
+            if (emptyField) {
+                formMessage.textContent = emptyField.message;
+                formMessage.className = 'form-message form-message--error';
+                emptyField.input.focus();
+                return;
+            }
+
+            // 중복 제출 방지: 저장이 끝날 때까지 버튼을 잠금
+            submitButton.disabled = true;
+
+            const { error } = await supabaseClient
+                .from('reservations')
+                .insert({
+                    name: document.getElementById('name').value.trim(),
+                    contact: document.getElementById('contact').value.trim(),
+                    hope_date: document.getElementById('hope-date').value,
+                    request: document.getElementById('request').value.trim(),
+                });
+
+            submitButton.disabled = false;
+
+            if (error) {
+                formMessage.textContent = '접수 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.';
+                formMessage.className = 'form-message form-message--error';
+                return;
+            }
+
+            formMessage.textContent = '접수되었습니다.';
+            formMessage.className = 'form-message form-message--success';
+            reservationForm.reset();
+        });
+    </script>
+
+</body>
+
+</html>
