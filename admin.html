@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>주말 독서 토론 접수 관리</title>
+    <style>
+        /* 기본값 초기화: 브라우저마다 다른 여백/박스 계산 방식을 통일 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+            color: #3a2e26;
+            background-color: #fdf8f3;
+            line-height: 1.6;
+            padding: 0 16px 48px;
+            word-break: keep-all;
+        }
+
+        h1 {
+            color: #3a2e26;
+        }
+
+        /* 상단 영역 */
+        header.top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 24px 0;
+        }
+
+        header.top-bar h1 {
+            font-size: 1.3rem;
+        }
+
+        /* 로그아웃 버튼: 위험한 동작은 아니라 은은하게 */
+        #logout-button {
+            padding: 10px 16px;
+            font-size: 0.9rem;
+            color: #b5762a;
+            background-color: #ffffff;
+            border: 1px solid #d8c7b6;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        /* 로그인 폼 영역 */
+        .login-section {
+            max-width: 360px;
+            margin: 64px auto 0;
+        }
+
+        .login-section h2 {
+            font-size: 1.3rem;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .form-field {
+            margin-bottom: 20px;
+        }
+
+        .form-field label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .form-field input {
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            border: 1px solid #d8c7b6;
+            border-radius: 8px;
+            background-color: #ffffff;
+        }
+
+        .form-field input:focus {
+            outline: none;
+            border-color: #b5762a;
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            min-height: 52px;
+            font-size: 1.05rem;
+            font-weight: bold;
+            color: #ffffff;
+            background-color: #b5762a;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        button[type="submit"]:active {
+            background-color: #9c6321;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: default;
+        }
+
+        /* 안내 문구: 내용이 있을 때만 보이도록 함 */
+        .form-message {
+            display: none;
+            margin-bottom: 16px;
+            padding: 12px 14px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+
+        .form-message:not(:empty) {
+            display: block;
+        }
+
+        .form-message--error {
+            color: #9b2c2c;
+            background-color: #fbe7e7;
+            border: 1px solid #f0b8b8;
+        }
+
+        .form-message--success {
+            color: #2f6b3a;
+            background-color: #e6f2e8;
+            border: 1px solid #b7dcc0;
+        }
+
+        /* 접수 내역 표 영역 */
+        .table-wrap {
+            overflow-x: auto;
+            background-color: #ffffff;
+            border: 1px solid #ecdfd2;
+            border-radius: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            white-space: nowrap;
+        }
+
+        th,
+        td {
+            padding: 12px 14px;
+            text-align: left;
+            border-bottom: 1px solid #ecdfd2;
+            font-size: 0.9rem;
+        }
+
+        th {
+            color: #6b5b4f;
+            background-color: #fdf8f3;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* 상태 배지: 대기는 회색, 확정은 초록 */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .status-badge--대기 {
+            color: #666666;
+            background-color: #ededed;
+        }
+
+        .status-badge--확정 {
+            color: #2f6b3a;
+            background-color: #e6f2e8;
+        }
+
+        /* 행 안의 버튼들 */
+        .row-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .row-actions button {
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            border: 1px solid #d8c7b6;
+            border-radius: 6px;
+            background-color: #ffffff;
+            cursor: pointer;
+        }
+
+        .row-actions button.confirm-button {
+            color: #ffffff;
+            background-color: #b5762a;
+            border-color: #b5762a;
+        }
+
+        .row-actions button.delete-button {
+            color: #9b2c2c;
+        }
+
+        .empty-row td {
+            text-align: center;
+            color: #6b5b4f;
+            padding: 32px 14px;
+        }
+
+        /* PC 화면(960px 이상)에서는 본문 폭을 960px로 제한하고 가운데 정렬 */
+        @media (min-width: 960px) {
+            body {
+                max-width: 960px;
+                margin: 0 auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 로그인 전에는 이 화면만 보이고, 접수 내역은 절대 노출되지 않음 -->
+    <section class="login-section" id="login-section">
+        <h2>관리자 로그인</h2>
+        <form id="login-form">
+            <div class="form-field">
+                <label for="login-email">이메일</label>
+                <input type="email" id="login-email" name="login-email" autocomplete="username">
+            </div>
+
+            <div class="form-field">
+                <label for="login-password">비밀번호</label>
+                <input type="password" id="login-password" name="login-password" autocomplete="current-password">
+            </div>
+
+            <p id="login-message" class="form-message" role="alert"></p>
+
+            <button type="submit">로그인하기</button>
+        </form>
+    </section>
+
+    <!-- 로그인 성공 후에만 보이는 관리자 화면 -->
+    <section id="admin-section" style="display: none;">
+        <header class="top-bar">
+            <h1>주말 독서 토론 접수 관리</h1>
+            <button id="logout-button" type="button">로그아웃</button>
+        </header>
+
+        <p id="admin-message" class="form-message" role="alert"></p>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>이름</th>
+                        <th>연락처</th>
+                        <th>희망 날짜</th>
+                        <th>요청사항</th>
+                        <th>상태</th>
+                        <th>접수 시각</th>
+                        <th>관리</th>
+                    </tr>
+                </thead>
+                <tbody id="reservations-body">
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Supabase JS 라이브러리 (CDN 방식으로 불러옴) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+    <script>
+        // ↓↓↓ Supabase 프로젝트 연결 정보 (index.html과 동일한 URL/key를 사용) ↓↓↓
+        const SUPABASE_URL = 'https://wtyralabvgrxxedhqrfj.supabase.co';
+        const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_zHbnogYy1cf7Nksso92mgA_phtXZd3p';
+        // ↑↑↑ 여기까지 ↑↑↑
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+        // 화면 요소
+        const loginSection = document.getElementById('login-section');
+        const adminSection = document.getElementById('admin-section');
+        const loginForm = document.getElementById('login-form');
+        const loginMessage = document.getElementById('login-message');
+        const loginButton = loginForm.querySelector('button[type="submit"]');
+        const logoutButton = document.getElementById('logout-button');
+        const adminMessage = document.getElementById('admin-message');
+        const reservationsBody = document.getElementById('reservations-body');
+
+        // 로그인 폼만 보이도록 전환 (관리자 화면과 접수 내역은 완전히 숨김)
+        function 로그인화면보이기() {
+            loginSection.style.display = '';
+            adminSection.style.display = 'none';
+            reservationsBody.innerHTML = '';
+            loginForm.reset();
+        }
+
+        // 로그인 성공 후 관리자 화면을 보여주고 접수 내역을 불러옴
+        function 관리자화면보이기() {
+            loginSection.style.display = 'none';
+            adminSection.style.display = '';
+            접수내역불러오기();
+        }
+
+        // 페이지를 열었을 때 이미 로그인되어 있는지 확인
+        async function 로그인상태확인() {
+            const { data } = await supabaseClient.auth.getSession();
+            if (data.session) {
+                관리자화면보이기();
+            } else {
+                로그인화면보이기();
+            }
+        }
+
+        // 로그인 폼 제출 처리
+        loginForm.addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+
+            if (email === '' || password === '') {
+                loginMessage.textContent = '이메일과 비밀번호를 모두 입력해주세요.';
+                loginMessage.className = 'form-message form-message--error';
+                return;
+            }
+
+            loginButton.disabled = true;
+            loginMessage.textContent = '';
+            loginMessage.className = 'form-message';
+
+            const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+            loginButton.disabled = false;
+
+            if (error) {
+                loginMessage.textContent = '이메일 또는 비밀번호가 올바르지 않습니다.';
+                loginMessage.className = 'form-message form-message--error';
+                return;
+            }
+
+            관리자화면보이기();
+        });
+
+        // 로그아웃 버튼 처리
+        logoutButton.addEventListener('click', async function () {
+            await supabaseClient.auth.signOut();
+            로그인화면보이기();
+        });
+
+        // 접수 내역을 최신순으로 불러와 표에 그림
+        async function 접수내역불러오기() {
+            adminMessage.textContent = '';
+            adminMessage.className = 'form-message';
+
+            const { data, error } = await supabaseClient
+                .from('reservations')
+                .select('id, name, contact, hope_date, request, status, created_at')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                adminMessage.textContent = '접수 내역을 불러오는 중 문제가 발생했습니다.';
+                adminMessage.className = 'form-message form-message--error';
+                return;
+            }
+
+            표그리기(data);
+        }
+
+        // 접수 시각을 보기 좋은 한국어 형식으로 변환
+        function 접수시각포맷(isoString) {
+            const date = new Date(isoString);
+            return date.toLocaleString('ko-KR');
+        }
+
+        // 접수 내역 배열을 받아 표의 각 행을 만듦
+        function 표그리기(reservations) {
+            reservationsBody.innerHTML = '';
+
+            if (reservations.length === 0) {
+                const emptyRow = document.createElement('tr');
+                emptyRow.className = 'empty-row';
+                emptyRow.innerHTML = '<td colspan="7">접수된 내역이 없습니다.</td>';
+                reservationsBody.appendChild(emptyRow);
+                return;
+            }
+
+            reservations.forEach(function (reservation) {
+                const row = document.createElement('tr');
+
+                const nameCell = document.createElement('td');
+                nameCell.textContent = reservation.name;
+
+                const contactCell = document.createElement('td');
+                contactCell.textContent = reservation.contact;
+
+                const hopeDateCell = document.createElement('td');
+                hopeDateCell.textContent = reservation.hope_date;
+
+                const requestCell = document.createElement('td');
+                requestCell.textContent = reservation.request || '-';
+
+                const statusCell = document.createElement('td');
+                const statusBadge = document.createElement('span');
+                statusBadge.className = 'status-badge status-badge--' + reservation.status;
+                statusBadge.textContent = reservation.status;
+                statusCell.appendChild(statusBadge);
+
+                const createdAtCell = document.createElement('td');
+                createdAtCell.textContent = 접수시각포맷(reservation.created_at);
+
+                const actionsCell = document.createElement('td');
+                const actionsWrap = document.createElement('div');
+                actionsWrap.className = 'row-actions';
+
+                const confirmButton = document.createElement('button');
+                confirmButton.type = 'button';
+                confirmButton.className = 'confirm-button';
+                confirmButton.textContent = '확정';
+                confirmButton.addEventListener('click', function () {
+                    예약확정처리(reservation.id, confirmButton);
+                });
+
+                const deleteButton = document.createElement('button');
+                deleteButton.type = 'button';
+                deleteButton.className = 'delete-button';
+                deleteButton.textContent = '삭제';
+                deleteButton.addEventListener('click', function () {
+                    예약삭제처리(reservation.id, deleteButton);
+                });
+
+                actionsWrap.appendChild(confirmButton);
+                actionsWrap.appendChild(deleteButton);
+                actionsCell.appendChild(actionsWrap);
+
+                row.appendChild(nameCell);
+                row.appendChild(contactCell);
+                row.appendChild(hopeDateCell);
+                row.appendChild(requestCell);
+                row.appendChild(statusCell);
+                row.appendChild(createdAtCell);
+                row.appendChild(actionsCell);
+
+                reservationsBody.appendChild(row);
+            });
+        }
+
+        // [확정] 버튼: 해당 행의 상태를 '확정'으로 바꾸고 표를 다시 그림
+        async function 예약확정처리(id, button) {
+            button.disabled = true;
+
+            const { error } = await supabaseClient
+                .from('reservations')
+                .update({ status: '확정' })
+                .eq('id', id);
+
+            if (error) {
+                adminMessage.textContent = '상태 변경 중 문제가 발생했습니다.';
+                adminMessage.className = 'form-message form-message--error';
+                button.disabled = false;
+                return;
+            }
+
+            접수내역불러오기();
+        }
+
+        // [삭제] 버튼: 확인창을 먼저 띄운 뒤 삭제하고 표를 다시 그림
+        async function 예약삭제처리(id, button) {
+            const 삭제확인됨 = confirm('이 접수 내역을 삭제하시겠습니까?');
+            if (!삭제확인됨) {
+                return;
+            }
+
+            button.disabled = true;
+
+            const { error } = await supabaseClient
+                .from('reservations')
+                .delete()
+                .eq('id', id);
+
+            if (error) {
+                adminMessage.textContent = '삭제 중 문제가 발생했습니다.';
+                adminMessage.className = 'form-message form-message--error';
+                button.disabled = false;
+                return;
+            }
+
+            접수내역불러오기();
+        }
+
+        로그인상태확인();
+    </script>
+
+</body>
+
+</html>
